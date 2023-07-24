@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/selectedItemBackground" /> <!-- Set the desired normal state color here -->
+    <corners android:radius="@dimen/card_corner_radius" /> <!-- Set the corner radius using the dimension resource -->
+</shape>

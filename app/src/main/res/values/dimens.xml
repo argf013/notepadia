@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Define the corner radius for the normal state -->
+    <dimen name="card_corner_radius">10dp</dimen>
+    <!-- Rest of your dimensions -->
+</resources>
