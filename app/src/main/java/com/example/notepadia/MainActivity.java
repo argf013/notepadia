@@ -1,5 +1,7 @@
 package com.example.notepadia;
 
+import static com.example.notepadia.DateUtils.parseDate;
+
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -34,29 +37,23 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    private List<Note> notes = new ArrayList<>();
+    private final List<Note> notes = new ArrayList<>();
     private NotesAdapter adapter;
 
     private ActionMode actionMode;
-    private List<Integer> selectedItems = new ArrayList<>();
+    private final List<Integer> selectedItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setTheme(R.style.Theme_Notepadia); // Pastikan tema sesuai dengan yang diizinkan ActionBar/Toolbar
+        setTheme(R.style.Theme_Notepadia);
         setContentView(R.layout.activity_main);
 
-        // Ambil ActionBar atau Toolbar (tergantung dari jenis yang Anda gunakan)
         ActionBar actionBar = getSupportActionBar();
-        // Jika Anda menggunakan Toolbar sebagai ActionBar, Anda juga bisa menggunakan:
-        // Toolbar toolbar = findViewById(R.id.toolbar);
 
         if (actionBar != null) {
-            // Ganti warna font judul ActionBar atau Toolbar
             actionBar.setTitle(Html.fromHtml("<font color=\"#1A1A1A\">" + getString(R.string.app_name) + "</font>"));
-            // Jika Anda menggunakan Toolbar sebagai ActionBar, Anda juga bisa menggunakan:
-            // toolbar.setTitle(Html.fromHtml("<font color=\"red\">" + getString(R.string.app_name) + "</font>"));
         }
 
         setContentView(R.layout.activity_main);
@@ -65,22 +62,16 @@ public class MainActivity extends AppCompatActivity {
         adapter = new NotesAdapter(this, notes);
         gridViewNotes.setAdapter(adapter);
 
-        // Daftarkan konteks menu pada GridView
         registerForContextMenu(gridViewNotes);
 
-        gridViewNotes.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (actionMode != null) {
-                    // In ActionMode, update selection
-                    toggleSelection(position);
-                } else {
-                    // Normal click, open edit activity
-                    Note selectedNote = notes.get(position);
-                    Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
-                    intent.putExtra("note_id", selectedNote.getId());
-                    startActivity(intent);
-                }
+        gridViewNotes.setOnItemClickListener((parent, view, position, id) -> {
+            if (actionMode != null) {
+                toggleSelection(position);
+            } else {
+                Note selectedNote = notes.get(position);
+                Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
+                intent.putExtra("note_id", selectedNote.getId());
+                startActivity(intent);
             }
         });
 
@@ -96,22 +87,40 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btnAddNote).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
-                startActivity(intent);
-            }
+        findViewById(R.id.btnAddNote).setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, EditNoteActivity.class);
+            startActivity(intent);
         });
     }
 
     private void showConfirmationDialog(String message, Runnable onConfirm) {
-        new AlertDialog.Builder(this)
-                .setMessage(message)
-                .setPositiveButton("Yes", (dialog, which) -> onConfirm.run())
-                .setNegativeButton("No", null)
-                .show();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Inflate custom layout
+        View dialogView = getLayoutInflater().inflate(R.layout.custom_confirmation_dialog, null);
+        builder.setView(dialogView);
+
+        // Get references to the buttons in the custom layout
+        Button buttonYes = dialogView.findViewById(R.id.buttonYes);
+        Button buttonNo = dialogView.findViewById(R.id.buttonNo);
+
+        // Set custom click listeners for "Yes" and "No" buttons
+        AlertDialog dialog = builder.create(); // Declare the 'dialog' variable here
+        buttonYes.setOnClickListener(v -> {
+            onConfirm.run();
+            dialog.dismiss(); // Close the dialog after "Yes" is clicked
+        });
+
+        buttonNo.setOnClickListener(v -> dialog.dismiss()); // Close the dialog if "No" is clicked
+
+        // Set the message for the dialog
+        builder.setMessage(message);
+
+        // Create and show the dialog
+        dialog.show();
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -141,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 jsonObject.put("id", note.getId());
                 jsonObject.put("title", note.getTitle());
                 jsonObject.put("content", note.getContent());
-                jsonObject.put("date_created", formatDate(note.getDateCreated()));
+                jsonObject.put("date_created", DateUtils.formatDate(note.getDateCreated()));
                 jsonArray.put(jsonObject);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -193,20 +202,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private String formatDate(Date date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        return dateFormat.format(date);
-    }
 
-    private Date parseDate(String dateString) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        try {
-            return dateFormat.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
 
     @Override
     protected void onResume() {
@@ -225,18 +222,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        // Ambil informasi tentang item yang dipilih dalam GridView
         AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
         int position = info.position;
 
-        switch (item.getItemId()) {
-            case R.id.menu_delete_note:
-                // Panggil metode untuk menghapus note dari database dan list
-                deleteNoteAtPosition(position);
-                return true;
-            default:
-                return super.onContextItemSelected(item);
+        if (item.getItemId() == R.id.menu_delete_note) {
+            deleteNoteAtPosition(position);
+            return true;
         }
+        return super.onContextItemSelected(item);
     }
 
     // ... Existing code ...
@@ -271,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
+    private final ActionMode.Callback actionModeCallback = new ActionMode.Callback() {
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             getMenuInflater().inflate(R.menu.menu_context_action, menu);

@@ -1,5 +1,7 @@
 package com.example.notepadia;
 
+import static com.example.notepadia.DateUtils.parseDate;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -60,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TITLE, note.getTitle());
         values.put(COLUMN_CONTENT, note.getContent());
-        values.put(COLUMN_DATE_CREATED, formatDate(note.getDateCreated()));
+        values.put(COLUMN_DATE_CREATED, DateUtils.formatDate(note.getDateCreated())); // Use DateUtils to format the date
         db.insert(TABLE_NOTES, null, values);
         db.close();
     }
@@ -70,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TITLE, note.getTitle());
         values.put(COLUMN_CONTENT, note.getContent());
-        values.put(COLUMN_DATE_CREATED, formatDate(note.getDateCreated()));
+        values.put(COLUMN_DATE_CREATED, DateUtils.formatDate(note.getDateCreated())); // Use DateUtils to format the date
         db.update(TABLE_NOTES, values, COLUMN_ID + " = ?", new String[]{String.valueOf(note.getId())});
         db.close();
     }
@@ -86,7 +88,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 note.setId(cursor.getInt(cursor.getColumnIndex(COLUMN_ID)));
                 note.setTitle(cursor.getString(cursor.getColumnIndex(COLUMN_TITLE)));
                 note.setContent(cursor.getString(cursor.getColumnIndex(COLUMN_CONTENT)));
-                note.setDateCreated(parseDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE_CREATED))));
+                note.setDateCreated(parseDate(cursor.getString(cursor.getColumnIndex(COLUMN_DATE_CREATED)))); // Use DateUtils to parse the date
                 notes.add(note);
             } while (cursor.moveToNext());
         }
@@ -119,19 +121,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return note;
     }
 
-    private String formatDate(Date date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        return dateFormat.format(date);
-    }
 
-    private Date parseDate(String dateString) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        try {
-            return dateFormat.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
+
 }
 

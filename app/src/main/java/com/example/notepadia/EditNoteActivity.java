@@ -1,5 +1,7 @@
 package com.example.notepadia;
 
+import static com.example.notepadia.DateUtils.formatDate;
+
 import android.os.Bundle;
 import android.text.Html;
 import android.view.Menu;
@@ -7,6 +9,7 @@ import android.view.MenuItem;
 import android.widget.EditText;
 
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,29 +26,21 @@ public class EditNoteActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTheme(R.style.Theme_Notepadia); // Pastikan tema sesuai dengan yang diizinkan ActionBar/Toolbar
+        setTheme(R.style.Theme_Notepadia);
         setContentView(R.layout.activity_edit_note);
 
-        // Ambil ActionBar atau Toolbar (tergantung dari jenis yang Anda gunakan)
         ActionBar actionBar = getSupportActionBar();
-        // Jika Anda menggunakan Toolbar sebagai ActionBar, Anda juga bisa menggunakan:
-        // Toolbar toolbar = findViewById(R.id.toolbar);
 
         if (actionBar != null) {
-            // Ganti warna font judul ActionBar atau Toolbar
             actionBar.setTitle(Html.fromHtml("<font color=\"#1A1A1A\">" + getString(R.string.app_name) + "</font>"));
-            // Jika Anda menggunakan Toolbar sebagai ActionBar, Anda juga bisa menggunakan:
-            // toolbar.setTitle(Html.fromHtml("<font color=\"red\">" + getString(R.string.app_name) + "</font>"));
         }
 
         etTitle = findViewById(R.id.etTitle);
         etContent = findViewById(R.id.etContent);
         tvDateCreated = findViewById(R.id.tvDateCreated);
 
-        // Get the note ID from the intent if it exists
         noteId = getIntent().getIntExtra("note_id", -1);
         if (noteId != -1) {
-            // Load the note from the database and display its data
             Note note = DatabaseHelper.getInstance(this).getNoteById(noteId);
             if (note != null) {
                 etTitle.setText(note.getTitle());
@@ -58,14 +53,9 @@ public class EditNoteActivity extends AppCompatActivity {
         }
     }
 
-    private String formatDate(Date date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        return dateFormat.format(date);
-    }
 
     @Override
     public void onBackPressed() {
-        // Automatically save the note when the back button is pressed
         saveNote();
     }
 
@@ -80,8 +70,7 @@ public class EditNoteActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         if (id == R.id.action_back) {
-            // The back button in the menu is clicked
-            saveNote(); // Automatically save the note before going back
+            saveNote();
             return true;
         }
 
@@ -91,12 +80,14 @@ public class EditNoteActivity extends AppCompatActivity {
     private void saveNote() {
         String title = etTitle.getText().toString().trim();
         String content = etContent.getText().toString().trim();
-        Date dateCreated = new Date(); // Current date
-
-        // Periksa apakah judul kosong atau hanya berisi spasi
+        Date dateCreated = new Date();
         if (title.isEmpty()) {
-            // Jika kosong, isi otomatis dengan "Untitled"
             title = "Untitled";
+        }
+
+        if (content.isEmpty()) {
+            Toast.makeText(this, "Content is required!", Toast.LENGTH_SHORT).show();
+            return; // Return from the method to prevent further processing
         }
 
         // Save the note to the database or update if it's an existing note

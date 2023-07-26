@@ -1,8 +1,6 @@
 package com.example.notepadia;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,10 +18,12 @@ public class NotesAdapter extends BaseAdapter {
     private Context context;
     private List<Note> notes;
     private List<Integer> selectedItems = new ArrayList<>();
+    private SimpleDateFormat dateFormat;
 
     public NotesAdapter(Context context, List<Note> notes) {
         this.context = context;
         this.notes = notes;
+        dateFormat = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
     }
 
     public void setSelectedItems(List<Integer> selectedItems) {
@@ -47,42 +47,46 @@ public class NotesAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        // Inflate the layout for the item
+        ViewHolder viewHolder;
+
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.item_note, parent, false);
+            viewHolder = new ViewHolder();
+            viewHolder.cardView = convertView.findViewById(R.id.card_view);
+            viewHolder.tvTitle = convertView.findViewById(R.id.tvNoteTitle);
+            viewHolder.tvContent = convertView.findViewById(R.id.tvNoteContent);
+            viewHolder.tvDateCreated = convertView.findViewById(R.id.tvNoteDate);
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
-        // Get the card view
-        MaterialCardView cardView = convertView.findViewById(R.id.card_view);
-
-        // Set the background color for the card view based on its selected state
-//        if (selectedItems.contains(position)) {
-//            cardView.setSelected(true);
-//        } else {
-//            cardView.setSelected(false);
-//        }
-
-        TextView tvTitle = convertView.findViewById(R.id.tvNoteTitle);
-        TextView tvContent = convertView.findViewById(R.id.tvNoteContent);
-        TextView tvDateCreated = convertView.findViewById(R.id.tvNoteDate);
-
         Note note = notes.get(position);
-        tvTitle.setText(note.getTitle());
-        tvContent.setText(note.getContent());
+        viewHolder.tvTitle.setText(note.getTitle());
+        viewHolder.tvContent.setText(note.getContent());
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        String formattedDate = dateFormat.format(note.getDateCreated());
-        tvDateCreated.setText(formattedDate);
+        if (note.getDateCreated() != null) {
+            String formattedDate = dateFormat.format(note.getDateCreated()); // Format the date directly in the adapter
+            viewHolder.tvDateCreated.setText(formattedDate);
+        } else {
+            viewHolder.tvDateCreated.setText("");
+        }
 
         if (selectedItems.contains(position)) {
             // If the item is selected, change its background color or apply a visual indicator
-            convertView.setBackgroundResource(R.drawable.selected_rounded);
+            viewHolder.cardView.setBackgroundResource(R.drawable.selected_rounded);
         } else {
             // If the item is not selected, reset its background
-            convertView.setBackgroundResource(R.drawable.rounded);
+            viewHolder.cardView.setBackgroundResource(R.drawable.rounded);
         }
 
         return convertView;
     }
 
+    private static class ViewHolder {
+        MaterialCardView cardView;
+        TextView tvTitle;
+        TextView tvContent;
+        TextView tvDateCreated;
+    }
 }
