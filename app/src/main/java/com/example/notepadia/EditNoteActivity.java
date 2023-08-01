@@ -81,16 +81,16 @@ public class EditNoteActivity extends AppCompatActivity {
         String title = etTitle.getText().toString().trim();
         String content = etContent.getText().toString().trim();
         Date dateCreated = new Date();
+
+        if (title.isEmpty() && content.isEmpty()) {
+            finish();
+            return;
+        }
+
         if (title.isEmpty()) {
             title = "Untitled";
         }
 
-        if (content.isEmpty()) {
-            Toast.makeText(this, "Content is required!", Toast.LENGTH_SHORT).show();
-            return; // Return from the method to prevent further processing
-        }
-
-        // Save the note to the database or update if it's an existing note
         Note note;
         if (noteId == -1) {
             // New note
@@ -100,7 +100,6 @@ public class EditNoteActivity extends AppCompatActivity {
             note.setDateCreated(dateCreated);
             DatabaseHelper.getInstance(this).addNote(note);
         } else {
-            // Existing note
             note = DatabaseHelper.getInstance(this).getNoteById(noteId);
             if (note != null) {
                 note.setTitle(title);
@@ -109,6 +108,7 @@ public class EditNoteActivity extends AppCompatActivity {
             }
         }
 
-        finish(); // Go back to the main activity
+        finish();
     }
+
 }

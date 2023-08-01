@@ -23,9 +23,11 @@
     <EditText
         android:id="@+id/etContent"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="wrap_content"
+        android:minHeight="300dp"
         android:gravity="start"
         android:hint="Content"
         android:background="@drawable/no_underline"/>
+
 
 </LinearLayout>

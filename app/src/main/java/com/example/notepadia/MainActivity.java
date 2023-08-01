@@ -79,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 if (actionMode == null) {
-                    // Start ActionMode for multi-selection
                     actionMode = startActionMode(actionModeCallback);
                 }
                 toggleSelection(position);
@@ -96,27 +95,22 @@ public class MainActivity extends AppCompatActivity {
     private void showConfirmationDialog(String message, Runnable onConfirm) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        // Inflate custom layout
         View dialogView = getLayoutInflater().inflate(R.layout.custom_confirmation_dialog, null);
         builder.setView(dialogView);
 
-        // Get references to the buttons in the custom layout
         Button buttonYes = dialogView.findViewById(R.id.buttonYes);
         Button buttonNo = dialogView.findViewById(R.id.buttonNo);
 
-        // Set custom click listeners for "Yes" and "No" buttons
-        AlertDialog dialog = builder.create(); // Declare the 'dialog' variable here
+        AlertDialog dialog = builder.create();
         buttonYes.setOnClickListener(v -> {
             onConfirm.run();
-            dialog.dismiss(); // Close the dialog after "Yes" is clicked
+            dialog.dismiss();
         });
 
-        buttonNo.setOnClickListener(v -> dialog.dismiss()); // Close the dialog if "No" is clicked
+        buttonNo.setOnClickListener(v -> dialog.dismiss());
 
-        // Set the message for the dialog
         builder.setMessage(message);
 
-        // Create and show the dialog
         dialog.show();
     }
 
@@ -189,9 +183,8 @@ public class MainActivity extends AppCompatActivity {
                 note.setTitle(jsonObject.getString("title"));
                 note.setContent(jsonObject.getString("content"));
                 note.setDateCreated(parseDate(jsonObject.getString("date_created")));
-                DatabaseHelper.getInstance(this).addNote(note); // Add note to database
+                DatabaseHelper.getInstance(this).addNote(note);
             }
-            // Refresh the notes list after importing
             notes.clear();
             notes.addAll(DatabaseHelper.getInstance(this).getAllNotes());
             adapter.notifyDataSetChanged();
@@ -202,13 +195,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-
-
     @Override
     protected void onResume() {
         super.onResume();
-        // Refresh the notes list when the activity is resumed
         notes.clear();
         notes.addAll(DatabaseHelper.getInstance(this).getAllNotes());
         adapter.notifyDataSetChanged();
@@ -232,17 +221,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
-    // ... Existing code ...
-
     private void deleteNoteAtPosition(int position) {
         Note selectedNote = notes.get(position);
 
-        // Show confirmation dialog before deleting
         showConfirmationDialog("Do you want to delete this note?", () -> {
-            // Delete note from database
             DatabaseHelper.getInstance(this).deleteNote(selectedNote.getId());
 
-            // Delete note from list
             notes.remove(position);
             adapter.notifyDataSetChanged();
         });
@@ -306,7 +290,6 @@ public class MainActivity extends AppCompatActivity {
                 DatabaseHelper.getInstance(this).deleteNote(id);
             }
 
-            // Refresh the notes list after deletion
             notes.clear();
             notes.addAll(DatabaseHelper.getInstance(this).getAllNotes());
             adapter.notifyDataSetChanged();
